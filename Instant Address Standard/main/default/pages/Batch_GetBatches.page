@@ -1,0 +1,434 @@
+<apex:page controller="Batch_GetBatches_CL">
+    <div class="bootstrap-scope">
+        <head>
+         
+
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+            <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+                        
+            <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap.css" rel="stylesheet" />
+            <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap-theme.min.css" rel="stylesheet" />
+            <style type="text/css" >
+                  body .bPageBlock .pbBody{
+                        /*padding: 6px 20px 4px 20px !important;*/
+                        display: inline-block;
+                        width: 96% !important;
+                        margin: 2% !important;
+                  }
+                  
+                  body{
+                    font-size: 14px;
+                  }
+                  
+                  .bootstrap-scope p {
+                        margin: 10px 0 10px 0 !important;
+                    }
+                
+                    .bootstrap-scope [hidden], .bootstrap-scope template{
+                        display: inline-block;
+                    }
+                  .h3step{
+                        margin-bottom: 5px !important;
+                        margin-top: 0px !important;
+                        display: inline-block;
+                  }
+                  
+                  .bootstrap-scope label{
+                    margin-bottom: 6px !important;
+                    vertical-align: middle;
+                  }
+                  
+                  .message{
+                        margin: 10px 0px 0px 0px !important;
+                  }
+                  
+                  .bootstrap-scope .form-control[disabled], .bootstrap-scope fieldset[disabled] .form-control{
+                        cursor: auto !important;
+                  }
+              </style>
+            <style type="text/css">
+                [hidden], template{
+                    display: inline-block;
+                }
+                
+                .customPopup {
+                    background-color: white;
+                    border-style: solid;
+                    border-width: 2px;
+                    left: 20%;
+                    padding: 10px;
+                    position: absolute;
+                    z-index: 9999;
+                    /* These are the 3 css properties you will need to tweak so the pop 
+                                            up displays in the center of the screen. First set the width. Then set 
+                                            margin-left to negative half of what the width is. You can also add 
+                                            the height property for a fixed size pop up.*/
+                    width: 500px;
+                    top: 20%;
+                }
+                
+                .disabledTextBox {
+                    background-color: white;
+                    border: 1px solid;
+                    color: black;
+                    cursor: default;
+                    width: 90px;
+                    display: table;
+                    padding: 2px 1px;
+                    text-align:right;
+                }   
+                
+                .closeButton {
+                    float: right;
+                }
+                
+                .headerheight{
+                    height: 20px;
+                }
+                
+                .selectedFlagsCSS td{
+                    padding-right: 10px;
+                }
+                
+                .selectedFlagsCSS td input{
+                    margin-right: 2px !important;
+                }
+            </style>
+            <script type="text/javascript">
+                function getFilterStats(filter){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.Batch_GetBatches_CL.getServiceOutputCount}',
+                        filter,
+                        function(result){
+                            if(result > 2000){
+                                document.getElementById('filterTotalCount').innerHTML = ("(total: " + result + ")");
+                             } else {
+                                document.getElementById('filterTotalCount').innerHTML = '';
+                             }
+                        }
+                    );
+                }
+            </script>
+        </head>
+        <apex:form >
+            <div class="content-fluid">           
+               <div class="row" style="margin-bottom: 15px;">
+                <div class="col-xs-8">
+                  <img style="display:inline-block;width: 185px;border-right: 1px solid #eee;padding-right: 15px;padding-bottom: 15px;margin-right: 15px;" id="logo" src="https://initiumsoftware.com/images/logo-initium.png" alt="Initium Software" />
+                  <h3 style="margin-bottom: 0;margin-top: 9px;display: inline-block;vertical-align: middle;">
+                      <b> Batch </b> Address Validation 
+                  </h3>
+              </div>
+              <div class="col-xs-4" style="text-align: right;">
+                  <apex:commandButton value="Cancel"  action="{!Cancel}" id="btnCancel" styleClass="btn btn-default" style="margin-right: 40px;"/>              
+              </div>
+               </div>            
+                <apex:outputPanel layout="block"   rendered="{!pageSource.ShowE1}">
+                  <div class="row">
+                    <div class="col-xs-12">
+                        <apex:pageBlock >
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <h3 class="h3step">
+                                      Step 4 - Batch Summary and Commit
+                                    </h3>
+                                    <p>
+                                        Batch results are displayed below.
+                                    </p>
+                                      <p>
+                                      Object: <b>{!pageSource.SelectedObjectName}</b> 
+                                  </p>
+                                  <p>
+                                      Batch: <b>{!pageSource.MappingName}</b> 
+                                  </p>
+                                </div>
+                                
+                            </div>
+                            <div class="row" style="margin-top: 20px;">
+                                <div class="col-md-6" style="text-align: center">
+                                    <apex:chart height="350" width="550" data="{!chartData}" animate="false">
+                                        <apex:pieSeries dataField="data" labelField="flagname" colorSet="{!colorsSet}" donut="40">
+                                            <apex:chartLabel display="none"/>
+                                            <apex:chartTips valueField="percentage" width="150"/>
+                                        </apex:pieSeries>
+                                        <apex:legend position="right" padding="5"/>
+                                    </apex:chart>
+                                </div>
+                                <div class="col-md-6">
+                                    <apex:pageBlockTable value="{!chartData}" var="chObj" styleClass="table" style="width: 100%; height:350px; margin-bottom: 0;">
+                                        <apex:column headerValue="Validation Status" headerClass="headerheight">
+                                          <apex:outputtext value="{!chObj.flagname}"/>  
+                                        </apex:column>
+                                        <apex:column headerValue="Addresses" headerClass="headerheight">
+                                          <apex:outputtext value="{!chObj.data}"/>  
+                                        </apex:column>
+                                        <apex:column headerValue="% of total" headerClass="headerheight">
+                                          <apex:outputtext value="{!chObj.percentage}"/>  
+                                        </apex:column>
+                                    </apex:pageBlockTable>
+                                    <apex:outputText value="{!totalAddresses}" style="margin-top: 5px; float: right; display:inline-block;"></apex:outputText>
+                                </div>
+                            </div> 
+                            <!-- Nav tabs -->
+                                <ul class="nav nav-tabs" role="tablist">
+                                  <li class="active"><a href="#data" role="tab" data-toggle="tab">Data</a></li>
+                                  <li><a href="#flags" role="tab" data-toggle="tab">Flags</a></li>                             
+                                </ul>                                
+                                <!-- Tab panes -->
+                              
+                                   
+                               
+                                <div class="tab-content" >
+                                 <div class="tab-pane active" id="data">
+                                    <div style="width:100%; border-top: 1px solid #d8d8d8; margin:20px 0; height: 1px;display:inline-block"></div>  
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <p>
+                                                Select which address categories should be committed back into <b>{!pageSource.SelectedObjectName}  ({!pageSource.MappingName})</b>.
+                                            </p>
+                                        </div>
+                                        <div class="col-md-4" style="text-align: right;">
+                                            <apex:commandButton styleClass="btn btn-default" style="min-width: 150px;" value="continue" action="{!LoadStep2}"  />
+                                        </div>
+                                   </div>  
+                                    <div class="row">
+                                        <div class="col-xs-12">                                     
+                                            <apex:outputPanel id="thePageDataList" >   
+                                                <script>
+                                                getFilterStats("{!filtersString}");
+                                                </script>
+                                                <apex:selectCheckboxes value="{!selectedFlagsList}" onchange="" styleClass="selectedFlagsCSS">
+                                                    <apex:actionSupport event="onclick" action="{!GetSelected}" rerender="thePageDataList"/>
+                                                    <apex:selectOptions value="{!flagsList}" />
+                                                </apex:selectCheckboxes>
+                                                <p>
+                                                    *Overridden addresses are not processed by the service and are automatically committed back to the relevant object.
+                                                </p>
+                                                <apex:pageBlockTable value="{!DataSet}" var="oppObj" styleClass="table">
+                                                    <apex:column headerValue="Formatted Street">
+                                                        <apex:outputtext value="{!oppObj.FR_Address1__c  }"/>  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted Street 2" rendered="{!showColumn2}">
+                                                        <apex:outputtext value="{!oppObj.FR_Address2__c  }" />  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted Street 3" rendered="{!showColumn3}"> 
+                                                        <apex:outputtext value="{!oppObj.FR_Address3__c  }"/>  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted Street 4" rendered="{!showColumn4}">
+                                                        <apex:outputtext value="{!oppObj.FR_Address4__c  }"/>  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted Street 5" rendered="{!showColumn5}">
+                                                        <apex:outputtext value="{!oppObj.FR_Address5__c  }"/>  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted City">
+                                                        <apex:outputtext value="{!oppObj.FR_City__c }"/>  
+                                                    </apex:column>   
+                                                    <apex:column headerValue="Formatted State">
+                                                        <apex:outputtext value="{!oppObj.FR_State__c }"/>   
+                                                    </apex:column>
+                                                    <apex:column headerValue="Formatted Zip">
+                                                        <apex:outputtext value="{!oppObj.FR_Zipcode__c }"/> 
+                                                    </apex:column>
+                                                    <apex:column headerValue="Country">
+                                                        <apex:outputtext value="{!oppObj.FR_Country__c }"/>  
+                                                    </apex:column>
+                                                    <apex:column headerValue="Details"  rendered="false">
+                                                        <apex:commandButton value="View" action="{!showPopup}" rerender="popup" status="status"/>
+                                                    </apex:column>
+                                                </apex:pageBlockTable>
+                                                <apex:panelGrid columns="8">                  
+                                                    
+                                                    <apex:commandButton style="margin-right: 5px;" styleClass="btn btn-default" status="fetchStatus" reRender="thePageDataList" rendered="{!noOfRecords >0}" value="First" action="{!PaginationFirst}" disabled="{!!hasPaginationPreviews}" title="First Page"/> 
+                                                    
+                                                    <apex:commandButton style="margin-right: 5px;" styleClass="btn btn-default" status="fetchStatus" reRender="thePageDataList" rendered="{!noOfRecords >0}" value="Previous" action="{!PaginationPreview}" disabled="{!!hasPaginationPreviews}" title="Previous Page"/> 
+                                                    
+                                                    <apex:commandButton style="margin-right: 5px;" styleClass="btn btn-default" status="fetchStatus" reRender="thePageDataList" rendered="{!noOfRecords >0}" value="Next" action="{!PaginationNext}" disabled="{!!hasPaginationNext}" title="Next Page"/> 
+                                                    
+                                                    <apex:commandButton style="margin-right: 5px;" styleClass="btn btn-default" status="fetchStatus" reRender="thePageDataList" rendered="{!noOfRecords >0}" value="Last" action="{!PaginationLast}" disabled="{!!hasPaginationNext}" title="Last Page"/> 
+                                                    
+                                                    <apex:outputText >
+                                                        {!GridLeyend} <span id="filterTotalCount"></span>
+                                                        
+                                                    </apex:outputText> 
+                                                    
+                                                    <apex:outputPanel >                      
+                                                        <apex:actionStatus id="fetchStatus" >
+                                                            <apex:facet name="start" >
+                                                                <img src="/img/loading.gif" />                    
+                                                            </apex:facet>
+                                                        </apex:actionStatus>
+                                                    </apex:outputPanel> 
+                                                    
+                                                </apex:panelGrid>
+                                                
+                                                <apex:outputPanel id="popup">
+                                                    <apex:outputPanel id="popInnerOutputPnl" styleClass="customPopup" layout="block" rendered="{!displayPopUp}">
+                                                        <apex:commandButton value="X" title="Close the popup" action="{!closePopup}" styleClass="closeButton" rerender="popup">
+                                                        </apex:commandButton>
+                                                        <apex:pageblockSection >                         
+                                                            
+                                                            <apex:pageblockSectionItem >
+                                                                <apex:outputLabel value="Email" for="address"></apex:outputLabel>
+                                                                
+                                                            </apex:pageblockSectionItem>
+                                                        </apex:pageblockSection>
+                                                    </apex:outputPanel>
+                                                </apex:outputPanel>
+                                            </apex:outputPanel>
+                                        </div>
+                                     </div> 
+                                  </div>
+                                 <div class="tab-pane" id="flags"> 
+                                  <apex:outputPanel id="blockflags" layout="block"   >
+                                   <label class="control-label">Filter by:</label> 
+                                     <div class="row">
+                                       <div class="col-xs-3">  
+                                             <apex:selectList multiselect="false" size="1" styleClass="form-control"   required="false" value="{!pageSource.SelectedFlag}" >
+                                               <apex:actionSupport event="onchange" reRender="blockflags" action="{!FlagsMappingChange}" status="filterFlagStatus" />                                                 
+                                               <apex:selectOption itemLabel="Verification Flag (Level 1)" itemValue="2f6c8eb2-1546-4852-8053-f09c76c09558"/>
+                                               <apex:selectOption itemLabel="Response Flag (Level 2)" itemValue="f56ce27c-caf2-47ea-89cc-ae44e601c552"/>
+                                               <apex:selectOption itemLabel="Address Change Flags (Level 3)" itemValue="676a6f37-964f-4c27-890a-2eea0655c4d16"/>
+                                             </apex:selectList>                                           
+                                      </div>  
+                                      <div class="col-xs-3">
+                                         <apex:inputText value="{!pageSource.FilterFlagTxt}"  id="theTextInput" styleClass="form-control"/>
+                                      </div> 
+                                      <div class="col-xs-3">
+                                          <apex:commandButton styleClass="btn btn-default" style="min-width:50px;float:left; " status="filterFlagStatus" value="run filter" reRender="blockflags"  />
+                                          
+                                            <apex:outputPanel style="display:block; margin-left: 5px; margin-top: 10px; float:left;">                      
+                                              <apex:actionStatus id="filterFlagStatus"  style="margin-left:20px;">
+                                                  <apex:facet name="start" >
+                                                      <img src="/img/loading.gif" />                    
+                                                  </apex:facet>
+                                              </apex:actionStatus>
+                                          </apex:outputPanel> 
+                                      </div>                        
+                                     </div>  
+                                      <br/>
+                                     <div class="row"  >
+                                       <div class="col-xs-12">
+                                          <apex:pageBlockTable value="{!FlagsData}" var="oppObj" styleClass="table">
+                                                    <apex:column headerValue="Value">
+                                                        <apex:outputtext value="{!oppObj.Value__c  }"/>  
+                                                    </apex:column>
+                                                   <apex:column headerValue="Name" rendered="{!pageSource.SelectedFlag != '676a6f37-964f-4c27-890a-2eea0655c4d16'}" >
+                                                        <apex:outputtext value="{!oppObj.Name }"  />  
+                                                    </apex:column> 
+                                                    <apex:column headerValue="Description" >
+                                                        <apex:outputtext value="{!oppObj.Description__c }" />  
+                                                    </apex:column>                                            
+                                                </apex:pageBlockTable>
+                                      </div>                              
+                                     </div>  
+                                   </apex:outputPanel> 
+                                  </div>                               
+                                </div>  
+                                   
+                        </apex:pageBlock>
+                    </div>
+                 </div>
+                 
+                </apex:outputPanel>
+                <apex:outputPanel id="blockMapping" layout="block"  rendered="{!pageSource.ShowE2}">
+                <apex:pageBlock >
+                 <div class="row">
+                    <div class="col-xs-8">
+                       <h3 class="h3step">
+                          Step 5 - Review Mapping and Commit
+                        </h3>
+                        <p>
+                            Map additional data you want to update back to <b>{!pageSource.baSendata.SelectedObjectName}  ({!pageSource.MappingName})</b>.
+                        </p>  
+                    </div>
+                   <div class="col-xs-4" style="text-align: right;">
+                    <apex:commandButton styleClass="btn btn-default" value="Finish"  action="{!LoadStep3}"  />              
+                   </div>
+                  </div>            
+                  <div style="width:100%; border-top: 1px solid #d8d8d8; margin-top:10px; margin-bottom:10px; height: 1px;display:inline-block;"></div>
+                 <div class="row"  >
+                    <apex:repeat value="{!pageSource.mappingList}" var="map" id="theRepeat">
+                      <div class="col-md-6">
+                        <div class="panel panel-default"  style=" min-width: 580px;" id="{!map.Id}">
+                           <div class="panel-heading">
+                             <div class="row">
+                                <div class="col-md-6" style="line-height: 33px;">
+                                                  Address form {!map.Index}
+                                              </div>
+                                <div class="col-md-6" style="text-align: right;">                                  
+                                 </div>
+                               </div>
+                            </div>
+                            <div class="panel-body">
+                             <apex:repeat value="{!map.InputMappingsList}" var="item" id="theRepeat">                                    
+                                 <div  class="row"  style=" margin-top:5px;"   id="{!item.Id}" >                                               
+                                              <div class="col-sm-5" >  
+                                                  <apex:outputtext value="{! item.Label}" style="width:100%" styleClass="form-control"/>   
+                                                  
+                                                 </div>
+                                              <div class="col-sm-5" >                                  
+                                                  <apex:outputtext value="{! item.MapFieldLabel}" style="width:100%" styleClass="form-control"/> 
+                                                  </div>
+                                               <div class="col-sm-1" >                              
+                                               </div>
+                                          </div>  
+                              </apex:repeat>                                
+                              <apex:repeat value="{!map.OutputMappingsList}" var="item" id="theRepeat2">
+                                 <div  class="row"  style="  margin-top:5px;"   id="{!item.Id}"     >
+                                               
+                                              <div class="col-sm-5" >   
+                                                    <apex:selectList value="{! item.Field}" size="1"  style="width:100%" styleClass="form-control">                           
+                                                        <apex:selectOptions value="{! pageSource.PreferObjectFieldOptions}" />     
+                                                        <!-- <apex:actionSupport event="onChange"   action="{! ObjectSelect}" rerender="Selected_PBS"/>-->
+                                                     </apex:selectList>  
+                                                 </div>
+                                              <div class="col-sm-5" >  
+                                                      <apex:selectList value="{! item.MapField}" size="1"  style="width:100%" styleClass="form-control">                           
+                                                        <apex:selectOptions value="{!pageSource.FieldMappingOptions}" />     
+                                                        <!-- <apex:actionSupport event="onChange"   action="{! ObjectSelect}" rerender="Selected_PBS"/>-->
+                                                     </apex:selectList>  
+                                                 </div>
+                                               <div class="col-sm-1" >
+                                                   <apex:commandButton style="float: rigth;  margin-left: 5px;min-width:50px" styleClass="btn btn-default" value="remove" action="{!RemoveMappingField}"  reRender="blockMapping"     >
+                                                       <apex:param assignTo="{!MappingItemId}"      name="MappingItemId"     value="{!map.Id}"/>
+                                                       <apex:param assignTo="{!MappingItemRowId}"   name="MappingItemRowId"  value="{!item.Id}"/>
+                                                   </apex:commandButton>
+                                               </div>
+                                          </div>    
+                                 
+                              </apex:repeat>
+                             <div  class="row" style="margin-top: 10px; border-top: 1px solid #d8d8d8; padding-top: 15px;">   
+                                <div class="col-sm-12" style="text-align: right;">
+                                  <apex:commandButton style="min-width:72px; " value="new field" styleClass="btn btn-default" action="{!AddSubMappingItem}" reRender="blockMapping" >
+                                                 <apex:param assignTo="{!MappingItemId}" name="MappingItemId" value="{!map.Id}"/>                         
+                                              </apex:commandButton>   
+                                </div>
+                             </div>
+                            </div>
+                        </div>
+                      </div>
+                     </apex:repeat>                  
+                  </div>                    
+                </apex:pageBlock>
+                </apex:outputPanel>
+                <!--<apex:outputPanel layout="block" id="copyblock" rendered="{!pageSource.ShowE3}">
+                <apex:pageBlock >
+                <apex:actionFunction name="IsCopyDone" action="{!IsCopyDone}" reRender="copyblock"  />
+                    <script type="text/javascript">
+                        setTimeout(function(){                           
+                                IsCopyDone();
+                           }, parseInt(5000));
+                    </script>
+                     <div class="row">
+                           <div class="col-md-12" style="text-align: center;margin-top: 50px;margin-bottom: 50px;">
+                               <img src="https://instantaddresspublic.blob.core.windows.net/salesforce/loader.gif" width="45" />
+                               <span>Processing, updating Salesforce object... this may take a few minutes.</span>
+                           </div>
+                       </div>
+                       </apex:pageBlock>
+                </apex:outputPanel>-->
+            </div>
+            
+        </apex:form>
+    </div>
+</apex:page>

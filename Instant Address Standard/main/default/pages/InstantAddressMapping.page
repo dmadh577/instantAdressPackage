@@ -1,0 +1,7 @@
+<apex:page controller="instantAddressBatchMapping" readOnly="true">    
+     <apex:form > 
+            <apex:commandLink action="{!deleteAccount}" onclick="">pross
+                   <apex:param value="sample" name="idToDel" /> 
+                </apex:commandLink>
+    </apex:form>
+</apex:page>

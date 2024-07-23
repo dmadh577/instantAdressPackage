@@ -1,0 +1,89 @@
+<apex:page controller="FinishingBatch_CL" title="Instant Address Batch" >
+     <div class="bootstrap-scope">
+     <head>
+          <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap.css" rel="stylesheet" />
+          <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap-theme.min.css" rel="stylesheet" />
+          <style>
+              body .bPageBlock .pbBody{
+                    /*padding: 6px 20px 4px 20px !important;*/
+                    display: inline-block;
+                    width: 96% !important;
+                    margin: 2% !important;
+              }
+              
+              body{
+                font-size: 14px;
+              }
+              
+              .bootstrap-scope p {
+                    margin: 10px 0 10px 0 !important;
+                }
+              
+              .h3step{
+                    margin-bottom: 5px !important;
+                    margin-top: 0px !important;
+                    display: inline-block;
+              }
+              
+              .bootstrap-scope label{
+                margin-bottom: 5px !important;
+              }
+              
+              .message{
+                    margin: 10px 0px 0px 0px !important;
+              }
+              
+              .bootstrap-scope .form-control[disabled], .bootstrap-scope fieldset[disabled] .form-control,
+              .bootstrap-scope .btn.disabled, .bootstrap-scope .btn[disabled], .bootstrap-scope fieldset[disabled] .btn{
+                    cursor: auto !important;
+              }
+              
+              
+          </style>    
+      </head>   
+        <apex:form styleClass="form-horizontal" onkeypress="checkEnter">
+        <div class="content-fluid">           
+           <div class="row">
+               
+              
+               
+                <div class="col-xs-12" style="margin-bottom: 15px;">
+                    <img style="display:inline-block;width: 185px;border-right: 1px solid #eee;padding-right: 15px;padding-bottom: 15px;margin-right: 15px;" id="logo" src="https://initiumsoftware.com/images/logo-initium.png" alt="Initium Software" />
+                      <h3 style="margin-bottom: 0;margin-top: 9px;display: inline-block;vertical-align: middle;">
+                          <b> Batch </b> Address Validation 
+                      </h3>
+                  </div>
+              </div>
+               <apex:pageBlock id="thePageBlockStep4"  >
+        <apex:panelGroup >
+         <script type="text/javascript">        
+                       setTimeout(function(){                           
+                             NextBatch();                          
+                           }, parseInt(10000));
+           </script>
+         </apex:panelGroup>        
+        <apex:actionFunction name="NextBatch" action="{!NextBatch}"   reRender="thePageBlockStep4"  />    
+                   
+       <div>
+         <span>You can navigate away from this page, the process will continue automatically.</span>
+       </div>  
+         <apex:outputPanel rendered="{! source.TransactionOverallStatus != 'Downloading'}">
+                  <div class="col-md-12" style="text-align: center;margin-top: 50px;margin-bottom: 50px;">
+                               <img src="https://instantaddresspublic.blob.core.windows.net/salesforce/loader.gif" width="45" />
+                               <!--<span>Processing, updating Salesforce object... this may take a few minutes.</span>-->
+                              <span>Processing, updating Salesforce objects {!source.BatchTotalDownloaded} of {!source.BatchTotalCount} complete ... {!source.BatchTotalDownloadedPrecentage}%</span>
+                           </div>            
+         </apex:outputPanel>  
+           <apex:outputPanel rendered="{! source.TransactionOverallStatus == 'Downloading'}">
+           <div class="row">
+                          <div class="col-md-12" style="text-align: center;margin-top: 50px;margin-bottom: 50px;">
+                              <img src="https://instantaddresspublic.blob.core.windows.net/salesforce/loader.gif" width="45" />
+                              <span>{!source.BatchTotalDownloaded} of {!source.BatchTotalCount} complete ... {!source.BatchTotalDownloadedPrecentage}%</span>
+                          </div>
+                      </div>
+         </apex:outputPanel>
+      </apex:pageBlock>
+      </div>
+    </apex:form>
+    </div>
+</apex:page>

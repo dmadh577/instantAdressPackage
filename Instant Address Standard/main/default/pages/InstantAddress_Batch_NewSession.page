@@ -1,0 +1,22 @@
+<apex:page >
+     <style type="text/css">
+    
+       #j_id0:NewSessionBlock{
+          display: none;
+         }
+
+    </style>
+
+    <apex:pageBlock id="HeaderSectionBlock"  >
+      
+              
+    </apex:pageBlock>
+    <apex:pageBlock id="NewSessionBlock"  >
+        
+        s
+        s
+        s
+        s
+        
+    </apex:pageBlock>
+</apex:page>

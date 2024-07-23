@@ -1,0 +1,58 @@
+<apex:page standardController="Account" extensions="InstantAddressPersonAccountExt" action="{!redirectLayout}">
+    <div id="InstantAddressPage">
+        <apex:sectionHeader title="{!Renderer.sobjectaccounttitle}"
+                            subtitle="{!Renderer.sobjecttitle}"/>
+        <apex:form styleClass="InstantAddressSubmitForm">
+            <apex:pageMessages />
+            <apex:inputHidden value="{!Renderer.personLastName}" id="hiddenpersonLastName" />
+            <apex:inputHidden value="{!Renderer.personFirstName}" id="hiddenpersonFirstName" />
+            <apex:inputHidden value="{!Renderer.personMiddleName}" id="hiddenpersonMiddleName" />
+            <apex:inputHidden value="{!Renderer.personSuffixName}" id="hiddenpersonSuffixName" />
+            <apex:inputHidden value="{!Renderer.personSalutation}" id="hiddenpersonSalutation" />
+            <apex:actionFunction name="RenderSObjectLayout"
+                                 action="{!Renderer.RenderSObjectLayout}"
+                                 rerender="out"
+                                 oncomplete="ReloadCKEditor();blurevents();">
+            </apex:actionFunction>
+            <apex:outputPanel id="out" >
+                <apex:dynamicComponent componentValue="{!Renderer.bodyHtml}" />
+            </apex:outputPanel>
+        </apex:form>
+    </div>
+    <apex:dynamicComponent componentValue="{!Renderer.RenderInitialHTML}" />
+    <script>
+        function blurevents(){             
+             
+            $("[id*=':personLastName']").blur(function(){               
+                $("[id*=':hiddenpersonLastName']").val($(this).val());
+            });
+            $("[id*=':personFirstName']").blur(function(){               
+                $("[id*=':hiddenpersonFirstName']").val($(this).val());
+            });
+            $("[id*=':personMiddleName']").blur(function(){
+                $("[id*=':hiddenpersonMiddleName']").val($(this).val());
+            });
+            $("[id*=':personSuffixName']").blur(function(){
+                $("[id*=':hiddenpersonSuffixName']").val($(this).val());
+            });
+            $("[id*=':personSalutation']").blur(function(){                 
+                $("[id*=':hiddenpersonSalutation']").val($(this).val());
+            });
+        }
+        function ReloadCKEditor() {
+           for(name in CKEDITOR.instances)
+           {
+               delete CKEDITOR.instances[name];
+           }
+           CKEDITOR.replaceAll('ckeditor');
+           
+           // Fix required selects
+           if($("#InstantAddressCreateFlag").val() == "true"){
+               $('.requiredInput select[id!="AQB__AccountType__c"] [value=""]').remove();
+               $('.requiredInput select[id!="AQB__AccountType__c"] option:first').prop('selected', true).trigger('change');
+           }
+        }
+    
+        RenderSObjectLayout();
+    </script>
+</apex:page>

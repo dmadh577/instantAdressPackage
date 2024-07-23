@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Billing_Response_Flag__c</fullName>
+    <description>Mid level validation flag indicating detailed status, (E) Exact, (T) Tentative, (M) Multiple, (S) Secondary, (U) Unmatched, (F) Foreign</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Mid level validation flag indicating detailed status, (E) Exact, (T) Tentative, (M) Multiple, (S) Secondary, (U) Unmatched, (F) Foreign</inlineHelpText>
+    <label>Billing Response Flag</label>
+    <length>1</length>
+    <required>false</required>
+    <trackHistory>false</trackHistory>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

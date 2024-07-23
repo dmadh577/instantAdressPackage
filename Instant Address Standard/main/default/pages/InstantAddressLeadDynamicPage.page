@@ -1,0 +1,15 @@
+<apex:page standardController="Lead" extensions="InstantAddress_Lead_Ext">
+    <div id="InstantAddressPage">
+        <apex:sectionHeader title="Lead Edit" subtitle="{!Renderer.sobjecttitle}"/>
+        <apex:form styleClass="InstantAddressSubmitForm">
+            <apex:pageMessages />
+            <apex:actionFunction name="RenderSObjectLayout" action="{!Renderer.RenderSObjectLayout}" rerender="out" oncomplete="ReloadCKEditor();">
+                <apex:param id="jsonLayout" name="jsonLayout" value="" />
+            </apex:actionFunction>
+            <apex:outputPanel id="out">
+                <apex:dynamicComponent componentValue="{!Renderer.bodyHtml}" />
+            </apex:outputPanel>
+        </apex:form>
+    </div>
+    <apex:dynamicComponent componentValue="{!Renderer.RenderInitialHTML}" />
+</apex:page>

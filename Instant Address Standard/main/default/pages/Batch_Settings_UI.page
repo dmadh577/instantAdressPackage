@@ -1,0 +1,208 @@
+<apex:page controller="Batch_Settings_CL"  >
+	<div class="bootstrap-scope">
+    <head>
+        <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap.css" rel="stylesheet" />
+          <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap-theme.min.css" rel="stylesheet" />
+        <style type="text/css">
+        	body .bootstrap-scope p{
+              	font-size: 14px !important;
+              }
+            
+            .settingstabs{
+            	padding: 10px !important;
+            }
+            
+            th.headerRow:first-child{
+                text-align: center;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+            }
+        </style>
+    </head>  
+    
+   <script type="text/javascript" src="/resource/jQuery"></script>
+    <script type="text/javascript">
+     
+        var j$ = jQuery.noConflict();
+        var timeInter =setInterval(function(){iterateObjectMethod()},2500);
+ 
+        function iterateObjectMethod(){
+            //getObjectList();
+            var iterationDone = j$("#isIterationDoneDiv").text();
+            if(iterationDone  == 'Yes'){
+                j$("#isIterationDoneDiv").hide();
+                clearInterval(timeInter);
+            }
+        }
+    </script>  
+    <apex:form >
+        <div class="content-fluid">  
+        <div class="row">
+            <div class="col-xs-12" style="margin-bottom: 15px;">
+                <img style="display:inline-block;width: 185px;border-right: 1px solid #eee;padding-right: 15px;padding-bottom: 15px;margin-right: 15px;" id="logo" src="https://initiumsoftware.com/images/logo-initium.png" alt="Initium Software" />
+                <h3 style="margin-bottom: 0;margin-top: 9px;display: inline-block;vertical-align: middle;">
+                    <b> Batch </b> Address Validation 
+                </h3>
+            </div>
+        </div>
+        <apex:tabPanel switchType="client" selectedTab="name1" id="theTabPanel" activeTabClass="settingstabs" inactiveTabClass="settingstabs">
+            <apex:tab label="Objects" name="name1" id="tabOne">
+            	<apex:pageBlock id="thePageBlock"   >     
+                     <apex:pageMessages />
+                <div class="row">          
+                   <div style="margin-right:15px; float:right;">
+                     <apex:commandButton value="Back"  action="{!Cancel}" id="btnCancel" styleClass="btn btn-default" style="margin-right: 5px;"/>
+                     <apex:commandButton value="Save" action="{!SavePrefObjects}" id="btnSave" reRender="thePageBlock" styleClass="btn btn-default"/>
+                   </div>            
+                </div>          
+           		<div class="row" style="margin-bottom: 20px;">
+                	<div class="col-xs-12">
+                        <p>
+                            Select which objects are available for batch processing. Selected objects appear in the dropdown options of Step 1.
+                        </p>
+                    </div>    
+                </div>
+                <apex:outputPanel layout="block" style="overflow:auto; height:600px; overflow-x: hidden;margin-top: 5px;" >
+                 <apex:pageBlockTable value="{!standardObjList}" var="std">            
+                    <apex:column > 
+                    <apex:facet name="header">
+                         <apex:inputCheckbox > 
+                        <apex:actionSupport event="onclick" action="{!GetSelected}" onsubmit="checkAll(this)" rerender="Selected_PBS"/> 
+                        </apex:inputCheckbox>
+                     </apex:facet> 
+                    <apex:inputCheckbox value="{!std.selected}" id="checkedone" style="width: 100%;"> 
+                    <apex:actionSupport event="onclick" action="{!GetSelected}" rerender="Selected_PBS"/> 
+                    </apex:inputCheckbox></apex:column>              
+                    <apex:column headerValue="Name">{!std.label}</apex:column>
+                    <apex:column headerValue="API Name">{!std.apiName}</apex:column>        
+                    <apex:column headerValue="Object Type">{!std.objectType}</apex:column>   
+                    <apex:column headerValue=" "  >  </apex:column>
+                </apex:pageBlockTable>  
+                </apex:outputPanel>
+                   
+               </apex:pageBlock>
+            </apex:tab>
+            <apex:tab label="Credentials" name="name2" id="tabTwo">
+            
+              <apex:pageBlock id="thePageBlockParameters">     
+             <apex:pageMessages />
+               <apex:outputPanel layout="block"   >
+                    
+                   <div style="margin-right:0px; float:right;width: 100%;text-align: right;">
+                     <apex:commandButton value="Back"  action="{!Cancel}" id="btnCancel" styleClass="btn btn-default" style="margin-right: 5px;"/>
+                     <apex:commandButton value="Save" action="{!SaveParameters}" id="btnSave"  reRender="thePageBlockParameters" styleClass="btn btn-default"/>
+                   </div>            
+               
+                 <p>
+                     Enter the necessary credentials below to activate the address validation service. These are provided to you by Initium Software support.
+                   </p>
+                 <div class="row" style="margin-top: 25px;"   >
+                     <div class="form-group">
+                        <label style="min-width: 120px;" class="col-sm-1  control-label" >User Name:</label> 
+                           <div class="col-sm-8">
+                           <apex:inputfield value="{!CurrentParameters.USERNAME__c }" style="min-width: 100%;" />
+                         </div>                
+                      </div>
+                </div>
+                 <div class="row"  style="margin-top: 5px;" >
+                     <div class="form-group">
+                        <label style="min-width: 120px;" class="col-sm-1   " >Password:</label> 
+                           <div class="col-sm-8">
+                           <apex:inputHidden value="{!CurrentParameters.PARAMETERID__c}" id="hidden_PARAMETERID"/>
+                           <apex:inputSecret value="{!CurrentParameters.PASSWORD__c }" style="min-width: 100%;"/>
+                         </div>                
+                      </div>
+                 </div>
+                 <div class="row" style="margin-top: 5px;" >
+                     <div class="form-group">
+                        <label style="min-width: 120px;" class="col-sm-1  control-label" >License Key:</label> 
+                           <div class="col-sm-8">
+                           <apex:inputfield value="{!CurrentParameters.LICENSEKEY__c }" style="min-width: 100%;"/>
+                         </div>                
+                      </div>
+                </div>
+                   <div class="row" style="margin-top: 5px;" >
+                     <div class="form-group">
+                        <label style="min-width: 120px;" class="col-sm-1  control-label" >Format Id:</label> 
+                           <div class="col-sm-8">
+                           <apex:inputfield value="{!CurrentParameters.FORMATID__c }" style="min-width: 100%;"/>
+                         </div>                
+                      </div>
+                </div>
+                                    
+                   
+                   
+             </apex:outputPanel>
+               
+               </apex:pageBlock>
+            </apex:tab>            
+           
+            <apex:tab label="Settings" name="name3" id="tabThree">
+            	<apex:pageBlock id="SettingsBlock"   >     
+                     <apex:pageMessages />
+                    
+               <div class="row"  style="margin-bottom: 5px;">
+                  <div class="col-xs-12">
+                        <p>
+                              Sync Data
+                        </p>
+                        <apex:commandButton value="Sync"  action="{!SyncData}"  styleClass="btn btn-default" style="margin-left: 70px;"/>
+                    </div>  
+                              
+                </div>
+                <div class="row">          
+                   <div style="margin-right:15px; float:right;">
+                     <apex:commandButton value="Back"  action="{!Cancel}" id="btnCancel" styleClass="btn btn-default" style="margin-right: 5px;"/>
+                     <apex:commandButton value="Save" action="{!SaveDefaultformat}" id="btnSave" reRender="SettingsBlock" styleClass="btn btn-default"/>
+                   </div>            
+                </div>          
+           		<div class="row" style="margin-bottom: 20px;">
+                	<div class="col-xs-12">
+                        <p>
+                            Default formats ( text TBD).
+                        </p>
+                    </div>    
+                </div>
+                <apex:outputPanel layout="block" style="overflow:auto; max-height:200px; overflow-x: hidden;margin-top: 5px;" >
+                 <apex:pageBlockTable value="{!DefaulTFormatList}" var="std">    
+                    <apex:column headerValue="Name" style=" width:35%;" >{!std.Name}</apex:column>
+                     <apex:column style=" width:25%;" >
+                        <apex:facet name="header">Default Format Batch</apex:facet>
+                        <apex:selectList size="1" value="{!std.DefaultFormatBatch}" style=" width:100%;" >
+                         <apex:selectOptions value="{!std.Formats}"></apex:selectOptions>
+                        </apex:selectList>
+                    </apex:column>       
+                      <apex:column style=" width:25%;">
+                        <apex:facet name="header">Default Format RealTime</apex:facet>
+                         
+                        <apex:selectList size="1" value="{!std.DefaultFormatRealTime}" style=" width:100%;" >                             
+                         <apex:selectOptions value="{!std.Formats}"></apex:selectOptions>
+                        </apex:selectList>
+                    </apex:column>     
+                      <apex:column headerValue=" "  >  </apex:column>
+                </apex:pageBlockTable>  
+                </apex:outputPanel>
+                   
+               </apex:pageBlock>
+            </apex:tab>
+		 
+        </apex:tabPanel>
+        <apex:actionStatus id="myStatus" startText="Fetching the Data..." stopText=""/><br/><br/>
+    
+   		<apex:actionFunction action="{!ObjectList}" status="myStatus" name="getObjectList" reRender="thePageBlock"/>
+        </div>
+   </apex:form>
+    
+   
+     <script>
+        function checkAll(cb){
+            var inputElem = document.getElementsByTagName("input");
+            for(var i=0; i<inputElem.length; i++)
+                {
+                if(inputElem[i].id.indexOf("checkedone")!=-1)
+                inputElem[i].checked = cb.checked;
+                }
+        }    
+</script>
+    </div>
+</apex:page>

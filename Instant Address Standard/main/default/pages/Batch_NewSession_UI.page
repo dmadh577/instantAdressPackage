@@ -1,0 +1,571 @@
+<apex:page controller="Batch_NewSession_CL" title="Instant Address Batch"  action="{!GetPageStatus}">
+    <div class="bootstrap-scope">
+      <head>
+          <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap.css" rel="stylesheet" />
+          <link href="https://instantaddresspublic.blob.core.windows.net/salesforce/css/bootstrap-theme.min.css" rel="stylesheet" />
+ 
+           <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/> 
+           <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+           <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+          <style>
+              body .bPageBlock .pbBody{
+                    /*padding: 6px 20px 4px 20px !important;*/
+                    display: inline-block;
+                    width: 96% !important;
+                    margin: 2% !important;
+              }
+              
+              body{
+                font-size: 14px;
+              }
+              
+              .bootstrap-scope p {
+                    margin: 10px 0 10px 0 !important;
+                }
+              
+              .h3step{
+                    margin-bottom: 5px !important;
+                    margin-top: 0px !important;
+                    display: inline-block;
+              }
+              
+              .bootstrap-scope label{
+                margin-bottom: 5px !important;
+              }
+              
+              .message{
+                    margin: 10px 0px 0px 0px !important;
+              }
+              
+              .bootstrap-scope .form-control[disabled], .bootstrap-scope fieldset[disabled] .form-control,
+              .bootstrap-scope .btn.disabled, .bootstrap-scope .btn[disabled], .bootstrap-scope fieldset[disabled] .btn{
+                    cursor: auto !important;
+              }
+              
+              
+          </style>
+        
+      </head>    
+         
+     <apex:form styleClass="form-horizontal" onkeypress="checkEnter">
+         
+     <script> 
+      function getFilterStats(filter){
+            Visualforce.remoting.Manager.invokeAction(
+                '{!$RemoteAction.Batch_NewSession_CL.getTableCount}',
+                filter,
+                '{!source.selectedObject}',
+                 function(result){
+                     var e_s = document.getElementsByClassName('filterTotalCount');
+                     for (i = 0; i < e_s.length; i++) {
+                         //if(result > 2000){
+                             e_s[i].innerHTML = result;
+                         //} else {
+                         //e_s[i].innerHTML = '';
+                         //}   
+                     }
+                 }
+             );
+         }
+      function ShowSaveMapping(c) {
+                if(c){
+                document.getElementById('modalSaveMapping').style.display = 'block';
+                }
+                else{
+                   document.getElementById('modalSaveMapping').style.display = 'none';
+                }             
+            }   
+       try {
+           
+           $(document).ready(function(){
+               window.addEventListener('keydown', function(e) {
+                    if (e.keyIdentifier == 'U+000A' || e.keyIdentifier == 'Enter' || e.keyCode == 13) {
+                        if (e.target.nodeName == 'INPUT' && e.target.type == 'text') {
+                            e.preventDefault();
+                            return false;
+                        }
+                    }
+                }, true);
+           
+           });
+
+        }
+        catch(err) {
+            //ignore
+        }
+
+ 
+    </script>
+     
+       
+  <apex:commandButton style="width:100px"  value="tempo" action="{!tempVoid}" rendered="false" /> 
+  <div class="content-fluid">
+      <div class="row">
+          <div class="col-xs-8">
+              <img style="display:inline-block;width: 185px;border-right: 1px solid #eee;padding-right: 15px;padding-bottom: 15px;margin-right: 15px;" id="logo" src="https://initiumsoftware.com/images/logo-initium.png" alt="Initium Software" />
+              <h3 style="margin-bottom: 0;margin-top: 9px;display: inline-block;vertical-align: middle;">
+                  <b> Batch </b> Address Validation 
+              </h3>
+                                     
+          </div>
+          <div class="col-xs-4" style="text-align: right;">
+              <apex:commandButton value="cancel"  action="{!Cancel}" id="btnCancel" styleClass="btn btn-default" style="margin-right: 40px;" rendered="{!NOT(source.showBlock1)}"/>
+                <apex:commandButton value="settings" action="{!Settings}" id="btnSettings" styleClass="btn btn-default"  style="margin-right: 40px;" rendered="{!source.showBlock1}"/>
+          </div>
+        </div>
+      <apex:pageMessages />
+      <div class="row">
+          <div class="col-xs-12" style="margin-top: 15px;">
+              <apex:outputPanel layout="block" id="blockMapping">
+                  <div id="contentStep1">
+                      
+                    <apex:pageBlock id="thePageBlockStep1" rendered="{!source.showBlock1 }">
+                        
+                        <div class="row">
+                            <div class="col-xs-8">
+                              <h3 class="h3step">
+                                  Step 1 - Setup
+                              </h3>
+                                <p>
+                                    Choose your postal data and the Salesforce object you want to process your batch against. Click settings to manage which options are available.
+                                </p>
+                                <div class="form-group col-xs-12">
+                                    <label class="control-label">Postal data:</label> 
+                                    <apex:selectList value="{! source.selectedPostData}"  onchange="OnSelectDataSet();" size="1"  style="max-width:400px" styleClass="form-control"> 
+                                        <apex:actionFunction action="{! OnSelectDataSet}" name="OnSelectDataSet" reRender="thePageBlockStep1"   />  
+                                        <apex:selectOptions value="{! source.PostalDataOptions}" /> 
+                                    </apex:selectList>              
+                                </div>
+                               <!--
+                               <div class="form-group col-xs-12">
+                                    <label class="control-label">Format:</label>     
+                                    <apex:selectList value="{!source.SelectFormat}" size="1"  style="max-width:400px" styleClass="form-control">                           
+                                        <apex:selectOptions value="{!source.FormatsOptions}" />                       
+                                    </apex:selectList>     
+                                </div>
+								 -->
+                                <div class="form-group col-xs-12">
+                                    <label class="control-label">Object:</label>   
+                                    <apex:selectList value="{!source.selectedObject}" size="1"  style="max-width:400px" styleClass="form-control">                           
+                                        <apex:selectOptions value="{!source.preferObjectsOptions}" />                       
+                                    </apex:selectList>     
+                                </div>
+                               
+                            </div>
+                            <div class="col-xs-4" style="text-align: right;">
+                                <apex:commandButton style="width:150px"  value="continue" action="{!LoadStep2}" id="btnSettings2" styleClass="btn btn-default"/>
+                            </div>
+                        </div>
+                     </apex:pageBlock>
+                  </div>                
+                  <div id="contentStep2">
+                  <apex:pageBlock id="thePageBlockStep2" rendered="{!source.showBlock2 }" >
+                      <div class="row">
+                          <div class="col-xs-8">
+                              <h3 class="h3step">
+                                  Step 2 - Batch Selection and Mapping
+                              </h3>
+                              <p>
+                                  Select a saved batch or create a new one.
+                              </p>
+                              <div class="form-group col-xs-12">
+                                  <label class="control-label" >Object:</label> 
+                                  <apex:inputText value="{!source.selectedObjectName}"  style="max-width:400px;" styleClass="form-control" maxlength="80" disabled="true" />
+                                  
+                              </div>
+                              <div style="display:{!if(source.isObjectLoaded,"block","none")};">
+                                 <div class="form-group col-xs-12">
+                                    <label class="control-label" >Select batch:</label>
+                                     <apex:actionFunction action="{! OnSelectMapping}"   name="OnSelectMapping"  reRender="blockMapping"/>  
+                                     <apex:selectList size="1" value="{! source.selectedSavedMapping}" style="max-width:400px;" onchange="OnSelectMapping();" styleClass="form-control"> 
+                                         <apex:selectOptions value="{! source.SavedMappingsOptions}" /> 
+                                     </apex:selectList>                                     
+                                  </div>
+                                  <div style="width:100%; border-top: 1px solid #d8d8d8; margin-top:10px; margin-bottom:8px; height: 1px;display:{!if((source.selectedSavedMapping == null || source.selectedSavedMapping == ""),"none","inline-block")};"></div>   
+                                  <div id="modalSaveMapping" class="form-group col-xs-12" style="display:{!if((source.isSavedMapping || source.selectedSavedMapping == null || source.selectedSavedMapping == ""),"none","inline-block")};">
+                                      
+                                      <p>
+                                            Name your batch and map your form fields.  Each section below represents an address form within the object. <!-- To map an additional form click on the add form button. -->
+                                      </p>
+                                      <p>
+                                          The following fields are required for each mapped form: 
+                                      </p>
+                                      <ul>
+                                          <li>Address</li>
+                                          <li>City</li>
+                                          <li>State</li>
+                                          <li>Zipcode</li>
+                                          <li>Verification Flag</li>
+                                          <li>Response Flag</li>
+                                          <li>Address Change Flags</li>
+                                          <li>Date Validated On</li>
+                                      </ul>
+                                      <label class="control-label" >Name:</label>
+                                      <apex:inputText value="{!source.MappingName}"  style="max-width:400px;" styleClass="form-control" maxlength="80" />
+                                      <!-- Disabled until version 2
+                                      <apex:commandButton style="margin-top:30px; min-width:30px;  display:{!if(source.isSavedMapping,"none","inline-block")}; " value="add form" styleClass="btn btn-default" action="{!AddSubMapping}" id="btnAddSubMapping"/>
+                                    -->
+                                  </div>
+                              </div> 
+                          </div>
+                          <div class="col-xs-4" style="text-align: right;">
+                              <apex:commandButton style="width:150px;" value="continue" styleClass="btn btn-default"  action="{!LoadStep3}"/>
+                          </div>                          
+                      </div>
+                      
+                      <div class="row" style="display:{!if((source.selectedSavedMapping == null || source.selectedSavedMapping == ""),"none","block")};">
+                          <apex:repeat value="{!source.mappingList}" var="map" id="theRepeat">
+                              <div class="col-md-6">
+                                  <div class="panel panel-default"  style=" min-width: 580px;" id="{!map.Id}">
+                                  <div class="panel-heading">
+                                      <div class="row">
+                                          <div class="col-md-6" style="line-height: 33px;">
+                                              address form {!map.Index}
+                                          </div>
+                                          <div class="col-md-6" style="display:{!if(source.isSavedMapping,"none","block")}; text-align: right;">
+                                              <!--<apex:commandButton style="min-width:50px; " styleClass="btn btn-default" value="delete form" action="{!RemoveMapping}"  reRender="blockMapping"  >
+                                                  <apex:param assignTo="{!MappingItemId}" name="MappingItemId" value="{!map.Id}"/>                                        
+                                              </apex:commandButton>-->
+                                          </div>
+                                   </div>
+                                </div>
+                                  <div class="panel-body">
+                                       <apex:repeat value="{!map.InputMappingsList}" var="item" id="theRepeat">
+                                       <div  class="row"  style="margin-top:5px;  display:{!if(source.isSavedMapping,"none","block")}; "   id="{!item.Id}"     >
+                                           
+                                          <div class="col-sm-5" >   
+                                                <apex:selectList value="{! item.Field}" size="1"  style="width:100%" styleClass="form-control">                           
+                                                    <apex:selectOptions value="{! source.PreferObjectFieldOptions}" />     
+                                                    <!-- <apex:actionSupport event="onChange"   action="{! ObjectSelect}" rerender="Selected_PBS"/>-->
+                                                 </apex:selectList>  
+                                             </div>
+                                          <div class="col-sm-5" >  
+                                                  <apex:selectList value="{! item.MapField}" size="1"  style="width:100%" styleClass="form-control">                           
+                                                    <apex:selectOptions value="{!source.FieldMappingOptions}" />     
+                                                    <!-- <apex:actionSupport event="onChange"   action="{! ObjectSelect}" rerender="Selected_PBS"/>-->
+                                                 </apex:selectList>  
+                                             </div>
+                                           <div class="col-sm-1" >
+                                               <apex:commandButton rendered="{!NOT(item.HideRemove)}" style="float: rigth;  margin-left: 5px;min-width:50px" styleClass="btn btn-default" value="remove" action="{!RemoveMappingField}"  reRender="blockMapping"     >
+                                                   <apex:param assignTo="{!MappingItemId}"      name="MappingItemId"     value="{!map.Id}"/>
+                                                   <apex:param assignTo="{!MappingItemRowId}"   name="MappingItemRowId"  value="{!item.Id}"/>
+                                               </apex:commandButton>
+                                           </div>
+                                      </div>    
+                                        <div  class="row"  style="  margin-top:5px;  display:{!if(source.isSavedMapping,"block","none")}; "   id="{!item.Id}"     >
+                                           
+                                          <div class="col-sm-5" >  
+                                              <apex:outputtext value="{! item.Label}" style="width:100%" styleClass="form-control"/>   
+                                              
+                                             </div>
+                                          <div class="col-sm-5" >                                  
+                                              <apex:outputtext value="{!item.MapFieldLabel}" style="width:100%" styleClass="form-control"/>                    
+                                               
+                                              </div>
+                                           <div class="col-sm-1" >                              
+                                           </div>
+                                      </div>  
+                                      </apex:repeat>
+                                    <div  class="row" style=" display:{!if(source.isSavedMapping,"none","block")}; margin-top: 10px; border-top: 1px solid #d8d8d8; padding-top: 15px;">   
+                                        <div class="col-sm-12" style="text-align: right;">
+                                          <apex:commandButton style="min-width:72px; " value="new field" styleClass="btn btn-default" action="{!AddSubMappingItem}" id="btnAddSubMapping2" reRender="blockMapping" >
+                                             <apex:param assignTo="{!MappingItemId}" name="MappingItemId" value="{!map.Id}"/>                         
+                                          </apex:commandButton>   
+                                        </div>
+                                    </div>
+                                  </div>
+                               </div>
+                              </div>
+                           </apex:repeat>                  
+                     </div>   
+                   </apex:pageBlock>    
+                  <apex:pageBlock id="thePageBlockStep3" rendered="{!source.showBlock3 }">
+                    
+                      <div class="container-fluid">
+                          <div class="row">
+                              <div class="col-md-8">
+                                  <h3 class="h3step">
+                                      Step 3 - Filter and Process Batch
+                                  </h3>
+                                  <p>
+                                      Refine this list by selecting from the filter below. You can create a custom filter by selecting the option in the dropdown.Once you are finished filtering click on the "process batch" button to run the address validation.
+                                  </p>
+                                  <p>
+                                      Object: <b>{!source.selectedObjectName}</b> 
+                                  </p>
+                                  <p>
+                                      Batch: <b>{!source.MappingName}</b> 
+                                  </p>
+                              </div>
+                              <div class="col-md-4" style="text-align: right;">
+                                  <apex:commandButton style="min-width:30px; margin-right:-12px;" styleClass="btn btn-default" value="process batch"  action="{!LoadStep4}"/>
+                              </div>
+                          </div>
+                          <script>                           
+                            var isdatepicket = '{!Filter1.ShowFilterDatePicker}';                                             
+                            if(isdatepicket == 'true'){
+                                $('.filter1Input').datepicker({
+                                    dateFormat: 'mm/dd/yy'
+                                    });
+                             } 
+                          else{
+                            $('.filter1Input').datepicker( "destroy" );
+                            $('.filter1Input').removeClass("hasDatepicker").removeAttr('id');
+                          }
+                             var isdatepicket2 = '{!Filter2.ShowFilterDatePicker}';                                             
+                            if(isdatepicket2 == 'true'){
+                                $('.filter2Input').datepicker({
+                                    dateFormat: 'mm/dd/yy'
+                                    });
+                             } 
+                              else{
+                            $('.filter2Input').datepicker( "destroy" );
+                            $('.filter2Input').removeClass("hasDatepicker").removeAttr('id');
+                          }
+                          
+                             var isdatepicket3 = '{!Filter3.ShowFilterDatePicker}';                                             
+                            if(isdatepicket3 == 'true'){
+                                $('.filter3Input').datepicker({
+                                    dateFormat: 'mm/dd/yy'
+                                    });
+                             } 
+                          else{
+                            $('.filter3Input').datepicker( "destroy" );
+                            $('.filter3Input').removeClass("hasDatepicker").removeAttr('id');
+                          }
+                          </script>
+                          <div class="row">
+                              <div class="col-xs-12">
+                                  <div>
+                                      <label class="control-label">Filter by:</label> 
+                                      <apex:actionFunction action="{! OnSelectStaticFilter}"  status="filterStatus"  name="OnSelectStaticFilter"  reRender="thePageBlockStep3"/> 
+                                      <apex:selectList size="1"  value="{!SelectedCustomFilter}"  style="max-width:400px;"  onchange="OnSelectStaticFilter();"  styleClass="form-control"> 
+                                          <apex:selectOptions value="{! StaticFilterOptions}" /> 
+                                      </apex:selectList>  
+                                  </div>
+                              </div>
+                              
+                          </div>
+                          <div class="row">
+                              <div class="col-xs-12" style="margin-top: 10px;">
+                                <apex:outputPanel id="outputCustomfilters" rendered="{!ShowCustomFilter}">
+                                <apex:pageMessages /> 
+                                  <div style="width:100%; border-top: 1px solid #d8d8d8; margin-top:10px; margin-bottom:8px; height: 1px;"></div>   
+                                <div  class="row"  >                               
+                                     <div class="col-sm-3" >                                       
+                                        <label>Field:</label>                                                                  
+                                     </div>
+                                     <div class="col-sm-3" > 
+                                       <label>Condition:</label>                                                            
+                                      </div>  
+                                     <div class="col-sm-3" >                          
+                                        <label>Value:</label>                                                          
+                                     </div>
+                                 </div>   
+                                <apex:outputPanel rendered="{!Filter1.isVisible}">
+                                   <div  class="row" style="margin-top:1px;  " >                               
+                                    <div class="col-sm-3" >                                                                
+                                       <apex:selectList readonly="{! !Filter1.isEditable}" size="1" value="{!Filter1.Field}"  style="width:100%" styleClass="form-control" onchange="OnChangeFieldFilter1();">
+                                           
+                                           <apex:actionFunction action="{! OnChangeFieldFilter1}" name="OnChangeFieldFilter1" status="filterStatus" reRender="thePageBlockStep3"   />  
+                                           <apex:selectOptions value="{!source.PreferObjectFieldOptions}" />                             
+                                        </apex:selectList>                              
+                                    </div>
+                                    <div class="col-sm-3" > 
+                                         <apex:selectList readonly="{! !Filter1.isEditable}" size="1" value="{!Filter1.Condition}"  style="width:100%" styleClass="form-control">                           
+                                             <apex:selectOptions value="{! OperatorsOptions}" />                             
+                                        </apex:selectList> 
+                                     </div>  
+                                    <div class="col-sm-3" > 
+                                        
+                                 
+                                      <apex:inputText rendered="{! Filter1.isEditable  && ! Filter1.ShowFilterDropdown}" value="{!Filter1.Value}" style="width:100%" styleClass="form-control filter1Input"  />  
+                                        <apex:outputText rendered="{! !Filter1.isEditable && ! Filter1.ShowFilterDropdown}" value="{!Filter1.Value}" style="width:100%" styleClass="form-control"/> 
+                                    
+                                       
+                                        
+                                        <apex:selectList rendered="{!  Filter1.ShowFilterDropdown}"  readonly="{! !Filter1.isEditable}" size="1" value="{!Filter1.Value}"  style="width:100%" styleClass="form-control" onchange="OnChangeFieldFilter1">                           
+                                           <apex:selectOptions value="{!Filter1.DropdownValues}" />                             
+                                        </apex:selectList> 
+                                       
+                                       </div>
+                                    <div class="col-sm-3">
+                                       <apex:commandButton rendered="{!Filter1.hasCommands  }" status="filterStatus" styleClass="btn btn-default" style="float: left;  margin-left: 10px;min-width:30px; " value="add condition"   action="{!AddFilter1}" reRender="thePageBlockStep3"/>                       
+                                    </div>   
+                                 </div>  
+                                    <div class="row">
+                                        <div class="col-sm-12" style="margin-top: 10px;">
+                                       <apex:commandButton rendered="{!Filter1.hasCommands}" status="filterStatus" styleClass="btn btn-default" style="min-width:50px; " value="run filter" action="{!FilterData}" reRender="thePageBlockStep3" />
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!Filter2.isVisible}">
+                                 <div  class="row">                               
+                                     <div class="col-sm-1" style="margin: 5px 0;"> 
+                                         <apex:selectList size="1"  value="{!Filter2.Operator}" style="width:100%" styleClass="form-control" >     
+                                            
+                                             <apex:selectOptions value="{! BooleanOperators}" />                             
+                                        </apex:selectList> 
+                                     </div>
+                                     <div class="col-sm-11"> 
+                                     </div>
+                                 </div> 
+                                 <div  class="row" style="margin-top:5px;  " >                               
+                                    <div class="col-sm-3" >                                                                
+                                       <apex:selectList size="1" value="{!Filter2.Field}"  style="width:100%" styleClass="form-control" onchange="OnChangeFieldFilter2();">      
+                                            <apex:actionFunction action="{! OnChangeFieldFilter2}" name="OnChangeFieldFilter2" status="filterStatus" reRender="thePageBlockStep3"   /> 
+                                             <apex:selectOptions value="{!source.PreferObjectFieldOptions}" />                             
+                                        </apex:selectList>                              
+                                    </div>
+                                     <div class="col-sm-3" > 
+                                         <apex:selectList size="1" value="{!Filter2.Condition}"  style="width:100%" styleClass="form-control">                           
+                                             <apex:selectOptions value="{! OperatorsOptions}" />                             
+                                        </apex:selectList> 
+                                     </div>  
+                                      <div class="col-sm-3" >                                           
+                                        <apex:inputText rendered="{! Filter2.isEditable  && ! Filter2.ShowFilterDropdown}" value="{!Filter2.Value}" style="width:100%" styleClass="form-control filter2Input"/>  
+                                        <apex:outputText rendered="{! !Filter2.isEditable && ! Filter2.ShowFilterDropdown}" value="{!Filter2.Value}" style="width:100%" styleClass="form-control"/> 
+                                       
+                                        <apex:selectList rendered="{! Filter2.ShowFilterDropdown}"  readonly="{! !Filter2.isEditable}" size="1" value="{!Filter2.Value}"  style="width:100%" styleClass="form-control"  >                           
+                                           <apex:selectOptions value="{!Filter2.DropdownValues}" />                             
+                                        </apex:selectList> 
+                                     </div>
+                                     <div class="col-sm-3">
+                                       <apex:commandButton rendered="{!Filter2.hasCommands}" status="filterStatus" styleClass="btn btn-default" style="float: left;  margin-left: 10px;min-width:30px; " value="add condition"   action="{!AddFilter2}" reRender="thePageBlockStep3"/>  
+                                       <apex:commandButton rendered="{!Filter2.hasCommands}" status="filterStatus" styleClass="btn btn-default" style="float: left;  margin-left: 10px;min-width:30px; " value="delete"   action="{!RemoveFilter2}" reRender="thePageBlockStep3"/> 
+                                    </div>  
+                                 </div>
+                                    <div class="row">
+                                        <div class="col-sm-12" style="margin-top: 10px;">
+                                            <apex:commandButton rendered="{!Filter2.hasCommands}" status="filterStatus" styleClass="btn btn-default" style="min-width:50px; " value="run filter" action="{!FilterData}" reRender="thePageBlockStep3" />
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                                <apex:outputPanel rendered="{!Filter3.isVisible}">
+                                 <div  class="row">                               
+                                     <div class="col-sm-1" style="margin: 5px 0;"> 
+                                         <apex:selectList size="1"  value="{!Filter3.Operator}" style="width:100%" styleClass="form-control">                           
+                                             <apex:selectOptions value="{! BooleanOperators}" />                             
+                                        </apex:selectList> 
+                                     </div>
+                                     <div class="col-sm-11"> 
+                                     </div>
+                                 </div> 
+                                 <div  class="row" style="margin-top:5px;  " >                               
+                                    <div class="col-sm-3" >                                                                
+                                       <apex:selectList size="1" value="{!Filter3.Field}"  style="width:100%" styleClass="form-control" onchange="OnChangeFieldFilter3();">    
+                                            <apex:actionFunction action="{! OnChangeFieldFilter3}" name="OnChangeFieldFilter3" status="filterStatus" reRender="thePageBlockStep3"   /> 
+                                            <apex:selectOptions value="{!source.PreferObjectFieldOptions}" />                             
+                                        </apex:selectList>                              
+                                    </div>
+                                     <div class="col-sm-3" > 
+                                         <apex:selectList size="1" value="{!Filter3.Condition}"  style="width:100%" styleClass="form-control">                           
+                                             <apex:selectOptions value="{! OperatorsOptions}" />                             
+                                        </apex:selectList> 
+                                     </div>  
+                                      <div class="col-sm-3" > 
+                                        <apex:inputText rendered="{! !Filter3.ShowFilterDropdown}" value="{!Filter3.Value}" style="width:100%" styleClass="form-control filter3Input"/>  
+                                        
+                                        <apex:selectList rendered="{!   Filter3.ShowFilterDropdown}" readonly="{! !Filter3.isEditable}" size="1" value="{!Filter3.Value}"  style="width:100%" styleClass="form-control"  >                           
+                                           <apex:selectOptions value="{!Filter3.DropdownValues}" />                             
+                                        </apex:selectList> 
+                                     </div>
+                                     <div class="col-sm-3">                        
+                                       <apex:commandButton rendered="{!Filter3.hasCommands}" styleClass="btn btn-default" status="filterStatus" style="float: left;  margin-left: 10px;min-width:30px; " value="delete"   action="{!RemoveFilter3}" reRender="thePageBlockStep3"/> 
+                                    </div>  
+                                 </div> 
+                                    <div class="row">
+                                        <div class="col-sm-12" style="margin-top: 10px;">
+                                            <apex:commandButton rendered="{!Filter3.hasCommands}" styleClass="btn btn-default" status="filterStatus" style="min-width:50px; " value="run filter" action="{!FilterData}" reRender="thePageBlockStep3" />
+                                        </div>
+                                    </div>
+                                </apex:outputPanel>
+                                
+                            </apex:outputPanel>
+                              </div>
+                          </div>
+                          <div class="row">
+                                <div class="col-xs-12">
+                                    <apex:outputPanel style="display:block; margin-left: 5px; margin-top: 10px;">                      
+                                      <apex:actionStatus id="filterStatus"  style="margin-left:20px;">
+                                          <apex:facet name="start" >
+                                              <img src="/img/loading.gif" />                    
+                                          </apex:facet>
+                                      </apex:actionStatus>
+                                  </apex:outputPanel> 
+                                    <script>
+                                        getFilterStats("{!filtersString}");
+                                    </script>
+                                    <p style="margin-top: 5px;">
+                                        <b>Total addresses: <span class="filterTotalCount"><img src="/img/loading.gif" /> </span></b>
+                                    </p>
+                                    <apex:pageBlockTable value="{!DataSet}" var="oppObj" styleClass="table" style="margin-top:15px;" >
+                                        <apex:column headerValue="Address">
+                                          <apex:outputtext value="{!oppObj.Address1  }"/>  
+                                         </apex:column>
+                                         <apex:column headerValue="Address" rendered="{!showColumn2}">
+                                          <apex:outputtext value="{!oppObj.Address2  }" />  
+                                         </apex:column>
+                                          <apex:column headerValue="Address" rendered="{!showColumn3}"> 
+                                          <apex:outputtext value="{!oppObj.Address3  }"/>  
+                                         </apex:column>
+                                         <apex:column headerValue="Address" rendered="{!showColumn4}">
+                                          <apex:outputtext value="{!oppObj.Address4  }"/>  
+                                         </apex:column>
+                                          <apex:column headerValue="Address" rendered="{!showColumn5}">
+                                          <apex:outputtext value="{!oppObj.Address5  }"/>  
+                                         </apex:column>
+                                        <apex:column headerValue="City">
+                                          <apex:outputtext value="{!oppObj.City }"/>  
+                                        </apex:column>   
+                                       <apex:column headerValue="State">
+                                           <apex:outputtext value="{!oppObj.State }"/>   
+                                        </apex:column>
+                                        <apex:column headerValue="Zip">
+                                           <apex:outputtext value="{!oppObj.Zip }"/> 
+                                        </apex:column>
+                                        <apex:column headerValue="Country">
+                                            <apex:outputtext value="{!oppObj.Country}"/>                        
+                                        </apex:column>
+                                        <apex:column headerValue="Source">
+                                          <apex:outputtext value="{!oppObj.SourceType }"/>  
+                                         </apex:column>
+                                    </apex:pageBlockTable>  
+                                  <apex:panelGrid columns="8">                  
+                                                                
+                                    <apex:commandButton style="margin-right: 5px;" status="fetchStatus" reRender="thePageBlockStep3" styleClass="btn btn-default" rendered="{!noOfRecords >0}" value="first" action="{!PaginationFirst}" disabled="{!!hasPaginationPreviews}" title="First Page"/> 
+                      
+                                    <apex:commandButton style="margin-right: 5px;" status="fetchStatus" reRender="thePageBlockStep3" styleClass="btn btn-default" rendered="{!noOfRecords >0}" value="previous" action="{!PaginationPreview}" disabled="{!!hasPaginationPreviews}" title="Previous Page"/> 
+                      
+                                    <apex:commandButton style="margin-right: 5px;" status="fetchStatus" reRender="thePageBlockStep3" styleClass="btn btn-default" rendered="{!noOfRecords >0}" value="next" action="{!PaginationNext}" disabled="{!!hasPaginationNext}" title="Next Page"/> 
+                      
+                                    <apex:commandButton style="margin-right: 5px;" status="fetchStatus" reRender="thePageBlockStep3" styleClass="btn btn-default" rendered="{!noOfRecords >0}" value="last" action="{!PaginationLast}" disabled="{!!hasPaginationNext}" title="Last Page"/> 
+                      
+                                    <apex:outputText >
+                                    {!GridLeyend} (total: <span class="filterTotalCount"></span>)
+                                                   
+                                    </apex:outputText> 
+                                           
+                                    <apex:outputPanel >                      
+                                        <apex:actionStatus id="fetchStatus" >
+                                            <apex:facet name="start" >
+                                              <img src="/img/loading.gif" />                    
+                                            </apex:facet>
+                                        </apex:actionStatus>
+                                    </apex:outputPanel> 
+                      
+                                </apex:panelGrid>   
+                                </div>
+                            </div> 
+                        </div>
+                   </apex:pageBlock>  
+                    
+                </div>
+                 </apex:outputPanel>
+          </div>
+      </div>
+    </div>
+
+ </apex:form> 
+    </div>
+</apex:page>
